@@ -5,6 +5,7 @@ import { DocumentMetadata, DocumentType } from "./resources/document/document.ty
 export type Document = {
   id: string;
   type: DocumentType;
+  originalFileUrl: string;
   previewFileUrl: string;
   previewFileHtml?: string;
   metadata?: DocumentMetadata;

@@ -37,7 +37,10 @@ export function HomePage() {
       if (d.metadata.authors != null) {
         return (
           <Text>
-            <Anchor href={`/book/${d.id}`}>{d.metadata.title}</Anchor> by{" "}
+            <Anchor fw="bold" href={`/book/${d.id}`}>
+              {d.metadata.title}
+            </Anchor>{" "}
+            by{" "}
             <Text component="span" fw="bold">
               {d.metadata.authors}
             </Text>
@@ -45,9 +48,9 @@ export function HomePage() {
         );
       }
       return (
-        <Text>
-          <Anchor href={`/book/${d.id}`}>{d.metadata.title}</Anchor>
-        </Text>
+        <Anchor fw="bold" href={`/book/${d.id}`}>
+          {d.metadata.title}
+        </Anchor>
       );
     }
     return (

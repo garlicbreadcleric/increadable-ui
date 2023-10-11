@@ -23,6 +23,7 @@ export interface DocumentMetadata {
 export interface DocumentDto {
   id: string;
   type: DocumentType;
+  originalFileUrl: string;
   previewFileUrl: string;
   metadata: DocumentMetadata;
 }

@@ -16,6 +16,7 @@ export async function findById(documentId: string): Promise<Document | null> {
   const document: Document = {
     id: documentId,
     type: remoteDocument.type,
+    originalFileUrl: remoteDocument.originalFileUrl,
     previewFileUrl: remoteDocument.previewFileUrl,
     previewFileHtml,
     metadata: remoteDocument.metadata,

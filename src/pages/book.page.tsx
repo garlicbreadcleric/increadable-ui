@@ -3,11 +3,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import parseHtml from "html-react-parser";
 import { styled } from "styled-components";
 import sanitizeHtml from "sanitize-html";
-import { Box, Flex, Paper, Text, Title } from "@mantine/core";
+import { Box, Button, Flex, Paper, Text, Title } from "@mantine/core";
 
 import * as documentProvider from "../resources/document/document.provider";
 import { Document } from "../db";
 import { routes } from "../router";
+import { IconDownload } from "@tabler/icons-react";
 
 export function BookPage() {
   const { bookId } = useParams();
@@ -111,12 +112,16 @@ export function BookPage() {
         <Title order={1} mb="md" style={{ cursor: "pointer" }} onClick={() => navigate(routes.index)}>
           Inc<u>read</u>able
         </Title>
-        {book?.metadata?.title != null ? (
-          <Title order={2} c="dimmed">
-            {book.metadata.title}
-          </Title>
-        ) : null}
-        {!loading && preview != null ? <Book ref={bookRef}>{preview}</Book> : <Text>Loading...</Text>}
+        {!loading && preview != null ? (
+          <>
+            <Button component="a" href={book!.originalFileUrl} rightSection={<IconDownload size={16} />}>
+              Download original file
+            </Button>
+            <Book ref={bookRef}>{preview}</Book>
+          </>
+        ) : (
+          <Text>Loading...</Text>
+        )}
       </Paper>
     </Flex>
   );
