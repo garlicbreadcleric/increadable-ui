@@ -20,6 +20,16 @@ export function BookPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (book != null) {
+      document.title = book?.metadata?.title ?? book?.id;
+    }
+
+    return () => {
+      document.title = "Increadable";
+    };
+  }, [book]);
+
+  useEffect(() => {
     async function fetchBook() {
       if (bookId != null) {
         const book = await documentProvider.findById(bookId);
