@@ -30,6 +30,31 @@ export function BookPage() {
   }, [book]);
 
   useEffect(() => {
+    const hypothesisServer = "https://hypothes.is";
+
+    if (preview != null) {
+      const script = document.createElement("script");
+      script.src = `${hypothesisServer}/embed.js`;
+      document.head.appendChild(script);
+    }
+
+    return () => {
+      const scripts = Array.from(document.querySelectorAll("script"));
+      scripts.forEach(function (script) {
+        if (script.src.startsWith(hypothesisServer)) {
+          script.remove();
+        }
+      });
+
+      const annotatorLink = document.querySelector('link[type="application/annotator+html"]');
+
+      if (annotatorLink) {
+        annotatorLink.dispatchEvent(new Event("destroy"));
+      }
+    };
+  }, [preview]);
+
+  useEffect(() => {
     async function fetchBook() {
       if (bookId != null) {
         const book = await documentProvider.findById(bookId);
