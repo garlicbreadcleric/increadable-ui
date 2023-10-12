@@ -7,12 +7,12 @@ import { IconBook2, IconUpload, IconX } from "@tabler/icons-react";
 import * as documentApi from "../resources/document/document.api";
 import * as documentProvider from "../resources/document/document.provider";
 import { routes } from "../router";
-import { Document } from "../db";
+import { IncreadableDocument } from "../db";
 
 export function HomePage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [documents, setDocuments] = useState<Document[]>();
+  const [documents, setDocuments] = useState<IncreadableDocument[]>();
 
   async function fetchDocuments() {
     setDocuments(await documentProvider.findAll());
@@ -32,7 +32,7 @@ export function HomePage() {
     }
   }
 
-  function showDocumentAnchor(d: Document) {
+  function showDocumentAnchor(d: IncreadableDocument) {
     if (d.metadata?.title != null) {
       if (d.metadata.authors != null) {
         return (

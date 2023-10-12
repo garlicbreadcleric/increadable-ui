@@ -12,7 +12,10 @@
   "dependencies": {
     "@mantine/core": "^7.1.2",
     "@mantine/dropzone": "^7.1.2",
+    "@mantine/hooks": "^7.1.2",
+    "@mantine/notifications": "^7.1.2",
     "@tabler/icons-react": "^2.38.0",
+    "colorjs.io": "^0.4.5",
     "dexie": "^3.2.4",
     "dexie-react-hooks": "^1.1.6",
     "html-react-parser": "^4.2.2",

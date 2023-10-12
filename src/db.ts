@@ -2,18 +2,25 @@ import Dexie, { Table } from "dexie";
 
 import { DocumentMetadata, DocumentType } from "./resources/document/document.type";
 
-export type Document = {
+export type IncreadableBookmark = {
+  id: string;
+  elementIndex: number;
+  content: string;
+  createdAt: Date;
+};
+
+export type IncreadableDocument = {
   id: string;
   type: DocumentType;
   originalFileUrl: string;
   previewFileUrl: string;
   previewFileHtml?: string;
-  metadata?: DocumentMetadata;
-  currentElementIndex?: number;
+  metadata: DocumentMetadata;
+  bookmarks: IncreadableBookmark[];
 };
 
 export class IncreadableDatabase extends Dexie {
-  documents!: Table<Document, string>;
+  documents!: Table<IncreadableDocument, string>;
 
   constructor() {
     super("increadable");

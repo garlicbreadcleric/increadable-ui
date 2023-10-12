@@ -4,20 +4,32 @@ import parseHtml from "html-react-parser";
 import { styled } from "styled-components";
 import sanitizeHtml from "sanitize-html";
 import { Box, Button, Flex, Paper, Text, Title } from "@mantine/core";
-
-import * as documentProvider from "../resources/document/document.provider";
-import { Document } from "../db";
-import { routes } from "../router";
+import { notifications } from "@mantine/notifications";
 import { IconDownload } from "@tabler/icons-react";
 
+import * as documentProvider from "../resources/document/document.provider";
+import { IncreadableBookmark, IncreadableDocument } from "../db";
+import { routes } from "../router";
+import { BookProgress } from "../components/book-progress";
+import Color from "colorjs.io";
+import { BookMenu, BookMenuBookmark, BookMenuItemFlat } from "../components/book-menu";
+import { BookmarkButton } from "../components/bookmark-button";
+
 export function BookPage() {
+  const navigate = useNavigate();
+
   const { bookId } = useParams();
 
   const bookRef = useRef(null);
 
-  const [book, setBook] = useState(null as Document | null);
+  const [book, setBook] = useState(null as IncreadableDocument | null);
   const [preview, setPreview] = useState(null as JSX.Element | null);
   const [loading, setLoading] = useState(true);
+  const [currentElementIndex, setCurrentElementIndex] = useState(0);
+  const [currentElementText, setCurrentElementText] = useState("");
+  const [menuItems, setMenuItems] = useState<BookMenuItemFlat[]>([]);
+  const [progress, setProgress] = useState(0);
+  const [progressColor, setProgressColor] = useState(new Color("#ff0000"));
 
   useEffect(() => {
     if (book != null) {
@@ -86,28 +98,23 @@ export function BookPage() {
     fetchBook();
   }, [bookId]);
 
-  const navigate = useNavigate();
-
   useEffect(() => {
-    if (book?.currentElementIndex != null) {
-      if (bookRef.current != null) {
-        const currentRef = bookRef.current as unknown as HTMLElement;
-        const element = currentRef.children[book.currentElementIndex];
-        element.classList.add("current-element");
-        element.scrollIntoView();
-        console.log(`book.currentElementIndex: ${book.currentElementIndex}`);
-      }
+    if (bookRef.current != null) {
+      const currentRef = bookRef.current as unknown as HTMLElement;
+      const headings = Array.from(
+        currentRef.querySelectorAll("h1,h2,h3,h4,.book--title1,.book--title2,.book--title3,.book--title4"),
+      ).map((h) => {
+        let level;
+        if (h.tagName.toLowerCase() === "h1" || h.classList.contains("book--title1")) level = 1;
+        if (h.tagName.toLowerCase() === "h2" || h.classList.contains("book--title2")) level = 2;
+        if (h.tagName.toLowerCase() === "h3" || h.classList.contains("book--title3")) level = 3;
+        if (h.tagName.toLowerCase() === "h4" || h.classList.contains("book--title4")) level = 4;
+        const element = h as HTMLElement;
+        return { level: level!, name: element.innerText, element };
+      });
+      setMenuItems(headings);
     }
   }, [book, bookRef]);
-
-  const isVisible = (el: Element) => {
-    const { top, left, bottom, right } = el.getBoundingClientRect();
-    const { innerHeight, innerWidth } = window;
-    return (
-      ((top > 0 && top < innerHeight) || (bottom > 0 && bottom < innerHeight)) &&
-      ((left > 0 && left < innerWidth) || (right > 0 && right < innerWidth))
-    );
-  };
 
   useEffect(() => {
     async function handleScroll() {
@@ -115,6 +122,20 @@ export function BookPage() {
         return;
       }
       const currentRef = bookRef.current as unknown as HTMLElement;
+
+      const progress = Math.min(
+        1.0,
+        -currentRef.getBoundingClientRect().top /
+          (currentRef.getBoundingClientRect().height - document.documentElement.clientHeight),
+      );
+      setProgress(progress * 100);
+
+      const red = new Color("#ff0000");
+      const redgreen = red.range("#00cc00", {
+        space: "hsl",
+        outputSpace: "srgb",
+      });
+      setProgressColor(redgreen(progress));
 
       let visibleElement = null;
       const elements = Array.from(currentRef.children);
@@ -127,10 +148,8 @@ export function BookPage() {
         }
       }
       if (bookId != null && book != null && visibleElement != null) {
-        const newBook = { ...book, currentElementIndex: i };
-        console.log(`i: ${i}`);
-        // setBook(newBook);
-        await documentProvider.update(bookId, newBook);
+        setCurrentElementIndex(i);
+        setCurrentElementText(elements[i].textContent ?? "");
       }
     }
 
@@ -142,24 +161,80 @@ export function BookPage() {
   }, [book, bookId]);
 
   return (
-    <Flex w="100%" justify="center" p="xl">
-      <Paper w="100%" maw={800}>
-        <Title order={1} mb="md" style={{ cursor: "pointer" }} onClick={() => navigate(routes.index)}>
-          Inc<u>read</u>able
-        </Title>
-        {!loading && preview != null ? (
-          <>
-            <Button component="a" href={book!.originalFileUrl} rightSection={<IconDownload size={16} />}>
-              Download original file
-            </Button>
-            <Book ref={bookRef}>{preview}</Book>
-          </>
-        ) : (
-          <Text>Loading...</Text>
-        )}
-      </Paper>
-    </Flex>
+    <>
+      <BookMenu
+        items={menuItems}
+        bookmarks={findBookmarkElements(book?.bookmarks ?? [])}
+        removeBookmark={removeBookmark}
+      />
+      <BookmarkButton onClick={addBookmark} />
+      <Flex w="100%" justify="center" p="xl">
+        <Paper w="100%" maw={800}>
+          <Title order={1} mb="md" style={{ cursor: "pointer" }} onClick={() => navigate(routes.index)}>
+            Inc<u>read</u>able
+          </Title>
+          {!loading && preview != null ? (
+            <>
+              <Button component="a" href={book!.originalFileUrl} rightSection={<IconDownload size={16} />}>
+                Download original file
+              </Button>
+              <Book ref={bookRef}>{preview}</Book>
+            </>
+          ) : (
+            <Text>Loading...</Text>
+          )}
+        </Paper>
+      </Flex>
+      <BookProgress color={progressColor.toString()} progress={progress} />
+    </>
   );
+
+  function isVisible(el: Element) {
+    const { top, left, bottom, right } = el.getBoundingClientRect();
+    const { innerHeight, innerWidth } = window;
+    return (
+      ((top > 0 && top < innerHeight) || (bottom > 0 && bottom < innerHeight)) &&
+      ((left > 0 && left < innerWidth) || (right > 0 && right < innerWidth))
+    );
+  }
+
+  async function addBookmark() {
+    if (bookId == null || book == null) return;
+    const bookmark: IncreadableBookmark = {
+      id: crypto.randomUUID(),
+      elementIndex: currentElementIndex,
+      content: currentElementText,
+      createdAt: new Date(),
+    };
+    const newBook = {
+      ...book,
+      bookmarks: [...book.bookmarks, bookmark],
+    };
+    setBook(newBook);
+    await documentProvider.update(bookId, newBook);
+
+    notifications.show({
+      title: "Bookmark added!",
+      message: <Text lineClamp={4}>{currentElementText}</Text>,
+    });
+  }
+
+  async function removeBookmark(bookmarkId: string) {
+    if (bookId == null || book == null) return;
+    const newBook = { ...book, bookmarks: book.bookmarks.filter((bookmark) => bookmark.id !== bookmarkId) };
+    setBook(newBook);
+    await documentProvider.update(bookId, newBook);
+  }
+
+  function findBookmarkElements(bookmarks: IncreadableBookmark[]): BookMenuBookmark[] {
+    if (bookRef.current == null) {
+      return [];
+    }
+    const currentRef = bookRef.current as unknown as HTMLElement;
+    const elements = Array.from(currentRef.children) as HTMLElement[];
+
+    return bookmarks.map((bookmark) => ({ ...bookmark, element: elements[bookmark.elementIndex] }));
+  }
 }
 
 const Book = styled(Box)`
