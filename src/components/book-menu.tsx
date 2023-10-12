@@ -57,7 +57,8 @@ export function BookMenu({ items, bookmarks, removeBookmark }: BookMenuProps) {
 
               <Tabs.Panel value="bookmarks">
                 <SegmentedControl
-                  w="100%"
+                  radius={0}
+                  fullWidth
                   value={bookmarkSorting}
                   onChange={(s) => setBookmarkSorting(s as BookmarkSorting)}
                   data={[
