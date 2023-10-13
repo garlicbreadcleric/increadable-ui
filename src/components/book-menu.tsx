@@ -1,7 +1,8 @@
 import { Anchor, Burger, CloseButton, Drawer, Flex, NavLink, SegmentedControl, Tabs, Text } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { IncreadableBookmark } from "../db";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { DateTime } from "luxon";
 
 type BookMenuTab = "contents" | "bookmarks";
 type BookmarkSorting = "location" | "oldest" | "newest";
@@ -25,6 +26,23 @@ export function BookMenu({ items, bookmarks, removeBookmark }: BookMenuProps) {
   const [tab, setTab] = useState<BookMenuTab>("contents");
   const [bookmarkSorting, setBookmarkSorting] = useState<BookmarkSorting>("location");
 
+  function saveTab(t: BookMenuTab) {
+    localStorage.setItem("bookMenuTab", t);
+    setTab(t);
+  }
+
+  function saveBookmarkSorting(s: BookmarkSorting) {
+    localStorage.setItem("bookmarkSorting", s);
+    setBookmarkSorting(s);
+  }
+
+  useEffect(() => {
+    const t = localStorage.getItem("bookMenuTab");
+    const s = localStorage.getItem("bookmarkSorting");
+    if (t != null) setTab(t as BookMenuTab);
+    if (s != null) setBookmarkSorting(s as BookmarkSorting);
+  }, []);
+
   return (
     <>
       <Burger opened={opened} onClick={toggle} m="sm" style={{ position: "fixed", zIndex: 10000 }} />
@@ -33,7 +51,7 @@ export function BookMenu({ items, bookmarks, removeBookmark }: BookMenuProps) {
         <Drawer.Overlay />
         <Drawer.Content style={{ overflowY: "scroll" }}>
           <Flex h="100%" justify="space-between" direction="column">
-            <Tabs defaultValue="contents" value={tab} onChange={(t) => setTab(t as BookMenuTab)}>
+            <Tabs defaultValue="contents" value={tab} onChange={(t) => saveTab(t as BookMenuTab)}>
               <Drawer.Header p={0} w="100%">
                 <Tabs.List w="100%">
                   {/* I'm truly sorry for this. */}
@@ -58,8 +76,9 @@ export function BookMenu({ items, bookmarks, removeBookmark }: BookMenuProps) {
               <Tabs.Panel value="bookmarks">
                 <SegmentedControl
                   fullWidth
+                  radius={0}
                   value={bookmarkSorting}
-                  onChange={(s) => setBookmarkSorting(s as BookmarkSorting)}
+                  onChange={(s) => saveBookmarkSorting(s as BookmarkSorting)}
                   data={[
                     { label: "Location", value: "location" },
                     { label: "Newest", value: "newest" },
@@ -76,7 +95,7 @@ export function BookMenu({ items, bookmarks, removeBookmark }: BookMenuProps) {
                         {bookmark.content}
                       </Anchor>
                     }
-                    description={`${bookmark.createdAt}`}
+                    description={`${DateTime.fromJSDate(bookmark.createdAt).toLocaleString(DateTime.DATETIME_FULL)}`}
                     rightSection={<CloseButton onClick={() => removeBookmark(bookmark.id)} />}
                   />
                 ))}
