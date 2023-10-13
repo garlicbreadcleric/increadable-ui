@@ -110,11 +110,23 @@ export function BookPage() {
         if (h.tagName.toLowerCase() === "h3" || h.classList.contains("book--title3")) level = 3;
         if (h.tagName.toLowerCase() === "h4" || h.classList.contains("book--title4")) level = 4;
         const element = h as HTMLElement;
-        return { level: level!, name: element.innerText, element };
+        return { level: level!, name: element.innerText, element, active: false };
       });
+      const currentElement = currentRef.children[currentElementIndex] as HTMLElement;
+      if (headings.length > 0) {
+        let currentHeading = headings[0];
+        for (const h of headings) {
+          if (currentElement.compareDocumentPosition(h.element) !== Node.DOCUMENT_POSITION_FOLLOWING) {
+            currentHeading = h;
+          } else {
+            break;
+          }
+        }
+        currentHeading.active = true;
+      }
       setMenuItems(headings);
     }
-  }, [book, bookRef]);
+  }, [book, bookRef, currentElementIndex]);
 
   useEffect(() => {
     async function handleScroll() {

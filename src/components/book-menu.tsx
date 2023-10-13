@@ -6,8 +6,8 @@ import { useState } from "react";
 type BookMenuTab = "contents" | "bookmarks";
 type BookmarkSorting = "location" | "oldest" | "newest";
 
-export type BookMenuItemFlat = { name: string; element: HTMLElement; level: number };
-export type BookMenuItem = { name: string; element: HTMLElement; children: BookMenuItem[]; level: number };
+export type BookMenuItemFlat = { name: string; element: HTMLElement; level: number; active: boolean };
+export type BookMenuItem = BookMenuItemFlat & { children: BookMenuItem[] };
 
 export type BookMenuBookmark = IncreadableBookmark & { element: HTMLElement };
 
@@ -29,7 +29,7 @@ export function BookMenu({ items, bookmarks, removeBookmark }: BookMenuProps) {
     <>
       <Burger opened={opened} onClick={toggle} m="sm" style={{ position: "fixed", zIndex: 10000 }} />
 
-      <Drawer.Root opened={opened} onClose={close}>
+      <Drawer.Root lockScroll={false} opened={opened} onClose={close}>
         <Drawer.Overlay />
         <Drawer.Content style={{ overflowY: "scroll" }}>
           <Flex h="100%" justify="space-between" direction="column">
@@ -57,7 +57,6 @@ export function BookMenu({ items, bookmarks, removeBookmark }: BookMenuProps) {
 
               <Tabs.Panel value="bookmarks">
                 <SegmentedControl
-                  radius={0}
                   fullWidth
                   value={bookmarkSorting}
                   onChange={(s) => setBookmarkSorting(s as BookmarkSorting)}
@@ -106,7 +105,18 @@ export function BookMenu({ items, bookmarks, removeBookmark }: BookMenuProps) {
       }
     }
 
+    activateBookMenuItems(result);
+
     return result;
+  }
+
+  function activateBookMenuItems(nestedList: BookMenuItem[]) {
+    for (const item of nestedList) {
+      activateBookMenuItems(item.children);
+      if (item.children.some((c) => c.active)) {
+        item.active = true;
+      }
+    }
   }
 
   function bookmarkComparator(a: BookMenuBookmark, b: BookMenuBookmark): number {
@@ -126,6 +136,9 @@ export function BookMenuItems({ items }: BookMenuItemsProps) {
     <>
       {items.map((item, i) => (
         <NavLink
+          active={item.active}
+          color="dark"
+          variant="light"
           component="div"
           key={i}
           label={
