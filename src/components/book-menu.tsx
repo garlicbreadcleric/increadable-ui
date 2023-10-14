@@ -1,8 +1,9 @@
-import { Anchor, Burger, CloseButton, Drawer, Flex, NavLink, SegmentedControl, Tabs, Text } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
-import { IncreadableBookmark } from "../db";
 import { useEffect, useState } from "react";
 import { DateTime } from "luxon";
+import { Anchor, Box, Burger, CloseButton, Drawer, NavLink, SegmentedControl, Tabs, Text } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
+
+import { IncreadableBookmark } from "../db";
 
 type BookMenuTab = "contents" | "bookmarks";
 type BookmarkSorting = "location" | "oldest" | "newest";
@@ -56,8 +57,8 @@ export function BookMenu({ items, bookmarks, removeBookmark }: BookMenuProps) {
 
       <Drawer.Root lockScroll={false} opened={opened} onClose={close}>
         <Drawer.Overlay />
-        <Drawer.Content style={{ overflowY: "scroll" }}>
-          <Flex h="100%" justify="space-between" direction="column">
+        <Drawer.Content>
+          <Box h="100%" style={{ overflowY: "scroll" }}>
             <Tabs defaultValue="contents" value={tab} onChange={(t) => saveTab(t as BookMenuTab)}>
               <Drawer.Header p={0} w="100%">
                 <Tabs.List w="100%">
@@ -108,7 +109,7 @@ export function BookMenu({ items, bookmarks, removeBookmark }: BookMenuProps) {
                 ))}
               </Tabs.Panel>
             </Tabs>
-          </Flex>
+          </Box>
         </Drawer.Content>
       </Drawer.Root>
     </>

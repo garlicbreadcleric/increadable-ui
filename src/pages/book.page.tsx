@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import parseHtml from "html-react-parser";
 import { styled } from "styled-components";
 import sanitizeHtml from "sanitize-html";
+import Color from "colorjs.io";
 import { Box, Button, Flex, Paper, Text, Title } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { IconDownload } from "@tabler/icons-react";
@@ -11,7 +12,6 @@ import * as documentProvider from "../resources/document/document.provider";
 import { IncreadableBookmark, IncreadableDocument } from "../db";
 import { routes } from "../router";
 import { BookProgress } from "../components/book-progress";
-import Color from "colorjs.io";
 import { BookMenu, BookMenuBookmark, BookMenuItemFlat } from "../components/book-menu";
 import { BookmarkButton } from "../components/bookmark-button";
 
