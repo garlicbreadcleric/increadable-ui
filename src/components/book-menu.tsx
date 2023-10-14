@@ -43,6 +43,13 @@ export function BookMenu({ items, bookmarks, removeBookmark }: BookMenuProps) {
     if (s != null) setBookmarkSorting(s as BookmarkSorting);
   }, []);
 
+  useEffect(() => {
+    const sidebar = document.querySelector("hypothesis-sidebar") as HTMLElement | undefined;
+    if (sidebar == null) return;
+    if (opened) sidebar.style.display = "none";
+    else sidebar.style.display = "inline";
+  }, [opened]);
+
   return (
     <>
       <Burger opened={opened} onClick={toggle} m="sm" style={{ position: "fixed", zIndex: 10000 }} />
