@@ -55,7 +55,7 @@ export function BookMenu({ items, bookmarks, removeBookmark }: BookMenuProps) {
     <>
       <Burger opened={opened} onClick={toggle} m="sm" style={{ position: "fixed", zIndex: 10000 }} />
 
-      <Drawer.Root lockScroll={false} opened={opened} onClose={close}>
+      <Drawer.Root opened={opened} onClose={close}>
         <Drawer.Overlay />
         <Drawer.Content>
           <Box h="100%" style={{ overflowY: "scroll" }}>
