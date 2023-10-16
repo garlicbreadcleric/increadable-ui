@@ -67,6 +67,18 @@ export function BookPage() {
   }, [preview]);
 
   useEffect(() => {
+    const classToTag: Record<string, string> = {
+      "book--title": "h1",
+      "book--title1": "h1",
+      "book--title2": "h2",
+      "book--title3": "h3",
+      "book--title4": "h4",
+      "book--title5": "h5",
+      "book--title6": "h6",
+      "book--paragraph": "p",
+      "book--cite": "blockquote",
+    };
+
     async function fetchBook() {
       if (bookId != null) {
         const book = await documentProvider.findById(bookId);
@@ -82,11 +94,16 @@ export function BookPage() {
             transformTags: {
               "*": (tagName, attribs) => {
                 const newAttribs = { ...attribs };
+                let newTagName = tagName;
+                let classList: string[] = [];
                 if (newAttribs.class != null) {
-                  const classList = newAttribs.class.split(" ").map((c) => `book--${c}`);
+                  classList = newAttribs.class.split(" ").map((c) => `book--${c}`);
                   newAttribs.class = classList.join(" ");
                 }
-                return { tagName, attribs: newAttribs };
+                for (const c of Object.keys(classToTag)) {
+                  if (classList.includes(c)) newTagName = classToTag[c];
+                }
+                return { tagName: newTagName, attribs: newAttribs };
               },
             },
           });
@@ -254,32 +271,5 @@ const Book = styled(Box)`
 
   * {
     max-width: 100%;
-  }
-
-  h1,
-  .book--title,
-  .book--title1 {
-    font-size: 2em;
-    margin-block-start: 0.67em;
-    margin-block-end: 0.67em;
-    margin-inline-start: 0px;
-    margin-inline-end: 0px;
-    font-weight: bold;
-  }
-
-  h2,
-  .book--title2 {
-    font-size: 1.5em;
-    margin-block-start: 0.83em;
-    margin-block-end: 0.83em;
-    margin-inline-start: 0px;
-    margin-inline-end: 0px;
-    font-weight: bold;
-  }
-
-  p,
-  .book--paragraph {
-    margin-top: 1rem;
-    margin-bottom: 1rem;
   }
 `;
