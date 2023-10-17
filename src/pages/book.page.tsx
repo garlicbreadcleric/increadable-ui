@@ -159,12 +159,11 @@ export function BookPage() {
       );
       setProgress(progress * 100);
 
-      const red = new Color("#ff0000");
-      const redgreen = red.range("#00cc00", {
+      const gradient = new Color("#ff0000").range("#00ff00", {
         space: "hsl",
         outputSpace: "srgb",
       });
-      setProgressColor(redgreen(progress));
+      setProgressColor(gradient(progress));
 
       let visibleElement = null;
       const elements = Array.from(currentRef.children);
