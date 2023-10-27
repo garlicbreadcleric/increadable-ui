@@ -6,6 +6,7 @@ import { IconBook2, IconUpload, IconX } from "@tabler/icons-react";
 
 import * as documentApi from "../resources/document/document.api";
 import * as documentProvider from "../resources/document/document.provider";
+import { DocumentDto, DocumentType } from "../resources/document/document.type";
 import { routes } from "../router";
 import { IncreadableDocument } from "../db";
 
@@ -15,7 +16,9 @@ export function HomePage() {
   const [documents, setDocuments] = useState<IncreadableDocument[]>();
 
   async function fetchDocuments() {
-    setDocuments(await documentProvider.findAll());
+    const documents = await documentProvider.findAll();
+    documents.sort((a, b) => a.id.localeCompare(b.id));
+    setDocuments(documents);
   }
 
   useEffect(() => {
@@ -26,37 +29,65 @@ export function HomePage() {
     setLoading(true);
     try {
       const document = await documentApi.upload(files[0]);
-      navigate(`${routes.book}/${document.id}`);
+      await documentProvider.findById(document.id);
+      switch (document.type) {
+        case DocumentType.Ebook: {
+          navigate(`${routes.book}/${document.id}`);
+          break;
+        }
+        case DocumentType.Pdf: {
+          window.location.href = `https://via.hypothes.is/${document.previewFileUrl}`;
+          break;
+        }
+      }
     } catch (e) {
       setLoading(false);
     }
   }
 
+  function documentUrl(d: IncreadableDocument | DocumentDto) {
+    switch (d.type) {
+      case DocumentType.Ebook:
+        return `/${routes.book}/${d.id}`;
+      case DocumentType.Pdf:
+        return `https://via.hypothes.is/${d.previewFileUrl}`;
+    }
+  }
+
+  function showOriginalFileAnchor(d: IncreadableDocument) {
+    return (
+      <Anchor c="dimmed" fw="bold" href={d.originalFileUrl}>
+        [{d.type}]
+      </Anchor>
+    );
+  }
+
   function showDocumentAnchor(d: IncreadableDocument) {
+    const url = documentUrl(d);
     if (d.metadata?.title != null) {
       if (d.metadata.authors != null) {
         return (
-          <Text>
-            <Anchor fw="bold" href={`/book/${d.id}`}>
+          <>
+            <Anchor fw="bold" href={url}>
               {d.metadata.title}
             </Anchor>{" "}
             by{" "}
             <Text component="span" fw="bold">
               {d.metadata.authors}
             </Text>
-          </Text>
+          </>
         );
       }
       return (
-        <Anchor fw="bold" href={`/book/${d.id}`}>
+        <Anchor fw="bold" href={url}>
           {d.metadata.title}
         </Anchor>
       );
     }
     return (
-      <Text>
-        <Anchor href={`/book/${d.id}`}>{d.id}</Anchor>
-      </Text>
+      <Anchor fw="bold" href={url}>
+        {d.id}
+      </Anchor>
     );
   }
 
@@ -90,7 +121,7 @@ export function HomePage() {
                 Drag and drop a document to read and annotate
               </Text>
               <Text size="sm" inline c="dimmed">
-                Supported formats: EPUB, FB2, Markdown
+                Supported formats: PDF, EPUB, FB2, Markdown
               </Text>
             </div>
           </Group>
@@ -100,7 +131,9 @@ export function HomePage() {
           {documents?.map((d) => (
             <Paper key={d.id} shadow="xs" mt="sm" p="md">
               <Flex justify="space-between">
-                {showDocumentAnchor(d)}
+                <Text>
+                  {showDocumentAnchor(d)} {showOriginalFileAnchor(d)}
+                </Text>
                 <CloseButton
                   onClick={async () => {
                     await documentProvider.remove(d.id);

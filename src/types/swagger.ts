@@ -11,6 +11,7 @@
 
 export enum DocumentType {
   Ebook = "ebook",
+  Pdf = "pdf",
 }
 
 export interface DocumentMetadata {
